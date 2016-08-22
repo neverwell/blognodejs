@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var multer  = require('multer');
+var multer = require('multer');
 
 /*
 生成一个路由实例用来捕获访问主页的GET请求，导出这个路由并在app.js中通过app.use('/', routes); 加载。
@@ -26,6 +26,28 @@ var crypto = require('crypto');
 //var User = require('../models/user.js');
 var User = require('../models/user');
 var Post = require('../models/post');
+
+
+
+//原版本使用方法
+//app.use(multer({
+//  dest: './public/images',
+//  rename: function (fieldname, filename) {
+//    return filename;
+//  }
+//}));
+//新的使用方法
+var storage = multer.diskStorage({
+    destination: function (req,file,cb) {
+        cb (null,'./public/images');
+    },
+    filename: function (req,file,cb) {
+        cb (null,file.originalname);
+    }
+});
+var upload = multer({
+    storage: storage
+});
 
 
 
@@ -175,6 +197,22 @@ module.exports = function(app) {
     });
 
 
+    app.get('/upload', checkLogin);
+    app.get('/upload', function(req, res) {
+        res.render('upload', {
+            title: '文件上传',
+            user: req.session.user,
+            success: req.flash('success').toString(),
+            error: req.flash('error').toString()
+        });
+    });
+
+
+    app.post('/upload', checkLogin);
+    app.post('/upload', upload.single('file1'), function(req, res) {
+        req.flash('success', '文件上传成功!');
+        res.redirect('/upload');
+    });
 
     function checkLogin(req, res, next) {
         if (!req.session.user) {
@@ -191,6 +229,8 @@ module.exports = function(app) {
         }
         next();
     }
+
+
 
 
 };

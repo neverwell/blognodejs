@@ -39,14 +39,13 @@ app.use(cookieParser()); //加载解析cookie的中间件
 app.use(express.static(path.join(__dirname, 'public'))); //设置public文件夹为存放静态文件的目录
 
 
-
 app.use(session({
-    secret: settings.cookieSecret,//用来防止篡改 cookie
+    secret: settings.cookieSecret, //用来防止篡改 cookie
     key: settings.db, //cookie name
     cookie: { maxAge: 1000 * 60 * 60 * 24 * 30 }, //30 days
     store: new MongoStore({
-        url: 'mongodb://localhost/blog'
-    })// MongoStore 实例，把会话信息存储到数据库中，以避免丢失
+            url: 'mongodb://localhost/blog'
+        }) // MongoStore 实例，把会话信息存储到数据库中，以避免丢失
 }));
 
 
