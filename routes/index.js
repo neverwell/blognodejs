@@ -53,7 +53,11 @@ var upload = multer({
 
 module.exports = function(app) {
     app.get('/', function(req, res) {
-        Post.getAll(null, function(err, posts) {
+        //判断是否是第一页，并把请求的页数转换成 number 类型
+        var page = parseInt(req.query.p) || 1;
+        var count = 2;
+        //查询并返回第 page 页的 count 篇文章
+        Post.getAll(null, page, count, function(err, posts, total) {
             if (err) {
                 posts = [];
             }
@@ -61,6 +65,9 @@ module.exports = function(app) {
                 title: '主页',
                 user: req.session.user,
                 posts: posts,
+                page: page,
+                isFirstPage: (page - 1) == 0,
+                isLastPage: ((page - 1) * count + posts.length) == total,
                 /*
                 success: req.flash('success').toString() 的意思是将成功的信息赋值给变量 success， 
                 error: req.flash('error').toString() 的意思是将错误的信息赋值给变量 error ，
@@ -217,14 +224,16 @@ module.exports = function(app) {
     /*这里我们添加了一条路由规则 app.get('/u/:name')，用来处理访问用户页的请求，
     然后从数据库取得该用户的数据并渲染 user.ejs 模版，生成页面并显示给用户*/
     app.get('/u/:name', function(req, res) {
+        var page = parseInt(req.query.p) || 1;
+        var count = 2;
         //检查用户是否存在
         User.get(req.params.name, function(err, user) {
             if (!user) {
                 req.flash('error', '用户不存在!');
-                return res.redirect('/'); //用户不存在则跳转到主页
+                return res.redirect('/');
             }
-            //查询并返回该用户的所有文章
-            Post.getAll(user.name, function(err, posts) {
+            //查询并返回该用户第 page 页的 count 篇文章
+            Post.getAll(user.name, page, count, function(err, posts, total) {
                 if (err) {
                     req.flash('error', err);
                     return res.redirect('/');
@@ -232,13 +241,16 @@ module.exports = function(app) {
                 res.render('user', {
                     title: user.name,
                     posts: posts,
+                    page: page,
+                    isFirstPage: (page - 1) == 0,
+                    isLastPage: ((page - 1) * count + posts.length) == total,
                     user: req.session.user,
                     success: req.flash('success').toString(),
                     error: req.flash('error').toString()
                 });
             });
         });
-    });
+    })
 
     app.get('/u/:name/:day/:title', function(req, res) {
         Post.getOne(req.params.name, req.params.day, req.params.title, function(err, post) {
