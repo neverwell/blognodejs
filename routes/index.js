@@ -222,6 +222,25 @@ module.exports = function(app) {
         res.redirect('/upload');
     });
 
+
+    app.get('/search', function(req, res) {
+        Post.search(req.query.keyword, function(err, posts) {
+            if (err) {
+                req.flash('error', err);
+                return res.redirect('/');
+            }
+            res.render('search', {
+                title: "SEARCH:" + req.query.keyword,
+                posts: posts,
+                user: req.session.user,
+                success: req.flash('success').toString(),
+                error: req.flash('error').toString()
+            });
+        });
+    });
+
+
+
     /*这里我们添加了一条路由规则 app.get('/u/:name')，用来处理访问用户页的请求，
     然后从数据库取得该用户的数据并渲染 user.ejs 模版，生成页面并显示给用户*/
     app.get('/u/:name', function(req, res) {
