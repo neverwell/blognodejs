@@ -16,6 +16,11 @@ var routes = require('./routes/index');
 var settings = require('./settings');
 var flash = require('connect-flash');
 
+
+var fs = require('fs');
+var accessLog = fs.createWriteStream('access.log', { flags: 'a' });
+var errorLog = fs.createWriteStream('error.log', { flags: 'a' });
+
 var app = express();
 
 // view engine setup
@@ -32,11 +37,17 @@ app.use(flash());
 //设置/public/favicon.ico为favicon图标
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev')); //加载日志中间件
+app.use(logger({ stream: accessLog })); //把日志保存为日志文件
+
 app.use(bodyParser.json()); //加载解析json的中间件
 app.use(bodyParser.urlencoded({ extended: false })); //加载解析urlencoded请求体的中间件
 app.use(cookieParser()); //加载解析cookie的中间件
 app.use(express.static(path.join(__dirname, 'public'))); //设置public文件夹为存放静态文件的目录
-
+app.use(function(err, req, res, next) {
+    var meta = '[' + new Date() + '] ' + req.url + '\n';
+    errorLog.write(meta + err.stack + '\n');
+    next();
+});
 
 app.use(session({
     secret: settings.cookieSecret, //用来防止篡改 cookie
