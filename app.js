@@ -22,6 +22,8 @@ var accessLog = fs.createWriteStream('access.log', { flags: 'a' });
 var errorLog = fs.createWriteStream('error.log', { flags: 'a' });
 
 var app = express();
+var passport = require('passport'),
+    GithubStrategy = require('passport-github').Strategy;
 
 // view engine setup
 //设置 views 文件夹为存放视图文件的目录, 即存放模板文件的地方,__dirname 为全局变量,存储当前正在执行的脚本所在的目录
@@ -66,6 +68,8 @@ app.use(session({
 //app.use('/', routes);
 //app.use('/users', users);
 
+
+app.use(passport.initialize()); //初始化 Passport
 routes(app);
 
 // catch 404 and forward to error handler.捕获404错误，并转发到错误处理器
@@ -75,6 +79,15 @@ app.use(function(req, res, next) {
     next(err);
 });
 
+
+
+passport.use(new GithubStrategy({
+    clientID: "2dc846b62b7def5bf2c0",
+    clientSecret: "992366c43fa96c1864a8bc2c6fe556e84a0abd51",
+    callbackURL: "http://localhost:3000/login/github/callback"
+}, function(accessToken, refreshToken, profile, done) {
+    done(null, profile);
+}));
 // error handlers
 
 // development error handler

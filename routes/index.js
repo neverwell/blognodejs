@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var multer = require('multer');
-
+var passport = require('passport');
 /*
 生成一个路由实例用来捕获访问主页的GET请求，导出这个路由并在app.js中通过app.use('/', routes); 加载。
 这样，当访问主页时，就会调用res.render('index', { title: 'Express' });
@@ -147,6 +147,17 @@ module.exports = function(app) {
             error: req.flash('error').toString()
         });
     });
+
+    app.get("/login/github", passport.authenticate("github", { session: false }));
+    app.get("/login/github/callback", passport.authenticate("github", {
+        session: false,
+        failureRedirect: '/login',
+        successFlash: '登陆成功！'
+    }), function(req, res) {
+        req.session.user = { name: req.user.username, head: "https://gravatar.com/avatar/" + req.user._json.gravatar_id + "?s=48" };
+        res.redirect('/');
+    });
+
 
     app.post('/login', checkNotLogin);
     app.post('/login', function(req, res) {
