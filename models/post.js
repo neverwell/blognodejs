@@ -10,7 +10,7 @@ min 指明连接池中最小连接数，idleTimeoutMillis 指明不活跃连接�
 log 指明是否打印连接池日志，这里我们选择打印
 */
 var Db = require('./db-pool');
-var markdown = require('markdown').markdown;
+// var markdown = require('markdown').markdown;
 var poolModule = require('generic-pool');
 var pool = poolModule.Pool({
     name: 'mongoPool',
@@ -133,9 +133,9 @@ Post.getAll = function(name, page, count, callback) {
                         return callback(err);
                     }
                     //解析 markdown 为 html
-                    docs.forEach(function(doc) {
-                        doc.post = markdown.toHTML(doc.post);
-                    });
+                    // docs.forEach(function(doc) {
+                    //     doc.post = markdown.toHTML(doc.post);
+                    // });
                     callback(null, docs, total);
                 });
             });
@@ -178,10 +178,10 @@ Post.getOne = function(_id, callback) {
                         }
                     });
                     //解析 markdown 为 html
-                    doc.post = markdown.toHTML(doc.post);
-                    doc.comments.forEach(function(comment) {
-                        comment.content = markdown.toHTML(comment.content);
-                    });
+                    // doc.post = markdown.toHTML(doc.post);
+                    // doc.comments.forEach(function(comment) {
+                    //     comment.content = markdown.toHTML(comment.content);
+                    // });
                     callback(null, doc); //返回查询的一篇文章
                 }
             });
