@@ -1,6 +1,23 @@
 var mongodb = require('./db');
 var crypto = require('crypto');
 var async = require('async');
+
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/blog');
+
+var userSchema = new mongoose.Schema({
+    name: String,
+    password: String,
+    email: String,
+    head: String
+}, {
+    collection: 'users'
+});
+
+var userModel = mongoose.model('User', userSchema);
+
+
+
 /*
 User：User 是一个描述数据的对象，即 MVC 架构中的模型。
 前面我们使用了许多视图和控制器，这是第一次接触到模型。
@@ -58,30 +75,40 @@ User.prototype.save = function(callback) {
     });
 };
 //读取用户信息
+// User.get = function(name, callback) {
+//     async.waterfall([
+//         function(cb) {
+//             //打开数据库
+//             mongodb.open(function(err, db) {
+//                 cb(err, db);
+//             });
+//         },
+//         function(db, cb) {
+//             //读取 users 集合
+//             db.collection('users', function(err, collection) {
+//                 cb(err, collection);
+//             });
+//         },
+//         function(collection, cb) {
+//             //查找用户名（name键）值为 name 一个文档
+//             collection.findOne({
+//                 name: name
+//             }, function(err, user) {
+//                 cb(err, user);
+//             });
+//         }
+//     ], function(err, user) {
+//         mongodb.close();
+//         callback(err, user);
+//     });
+// };
 User.get = function(name, callback) {
-    async.waterfall([
-        function(cb) {
-            //打开数据库
-            mongodb.open(function(err, db) {
-                cb(err, db);
-            });
-        },
-        function(db, cb) {
-            //读取 users 集合
-            db.collection('users', function(err, collection) {
-                cb(err, collection);
-            });
-        },
-        function(collection, cb) {
-            //查找用户名（name键）值为 name 一个文档
-            collection.findOne({
-                name: name
-            }, function(err, user) {
-                cb(err, user);
-            });
+    userModel.findOne({ name: name }, function(err, user) {
+        if (err) {
+            return callback(err);
         }
-    ], function(err, user) {
-        mongodb.close();
-        callback(err, user);
+        callback(null, user);
     });
 };
+
+module.exports = User;
